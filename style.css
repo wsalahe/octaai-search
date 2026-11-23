@@ -1,0 +1,90 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --teal: #2EC4B6;
+  --teal-dim: #1e8c82;
+  --bg-top: #0d3d3a;
+  --bg-bottom: #050808;
+  --card: #10201e;
+  --card-border: #1d3532;
+  --text: #e8f4f2;
+  --text-dim: #9db8b4;
+}
+html { min-height: 100%; }
+body {
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 65%);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#app { width: 100%; max-width: 720px; padding: 0 18px; flex: 1; }
+#brand { text-align: center; margin-top: 12vh; transition: margin-top .35s ease; }
+body.searched #brand { margin-top: 28px; }
+body.searched .tagline { display: none; }
+#logo { width: 92px; height: 92px; transition: width .35s ease, height .35s ease; }
+body.searched #logo { width: 44px; height: 44px; }
+#brand h1 { font-size: 2rem; font-weight: 700; letter-spacing: .5px; margin-top: 10px; }
+body.searched #brand h1 { font-size: 1.15rem; margin-top: 4px; }
+#brand h1 span { color: var(--teal); font-weight: 400; }
+.tagline { color: var(--text-dim); margin-top: 8px; font-size: .95rem; }
+#search-form {
+  display: flex; gap: 0; margin: 26px auto 0; max-width: 560px;
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 999px; overflow: hidden;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+#search-form:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(46,196,182,.18); }
+#q {
+  flex: 1; border: 0; background: transparent; color: var(--text);
+  padding: 14px 20px; font-size: 1.05rem; outline: none;
+}
+#q::placeholder { color: var(--text-dim); }
+#search-form button {
+  border: 0; background: var(--teal); color: #052826;
+  padding: 0 22px; cursor: pointer; font-size: 1rem;
+  transition: background .15s ease;
+}
+#search-form button:hover { background: #45d8cb; }
+#status { text-align: center; color: var(--text-dim); padding: 28px 0; font-size: .95rem; }
+.spinner {
+  display: inline-block; width: 18px; height: 18px; vertical-align: -4px; margin-right: 8px;
+  border: 2px solid var(--card-border); border-top-color: var(--teal);
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#instant {
+  margin-top: 22px; background: var(--card); border: 1px solid var(--card-border);
+  border-left: 3px solid var(--teal); border-radius: 12px; padding: 16px 18px;
+}
+#instant h2 { font-size: 1.05rem; margin-bottom: 6px; }
+#instant h2 a { color: var(--teal); text-decoration: none; }
+#instant h2 a:hover { text-decoration: underline; }
+#instant p { color: var(--text-dim); font-size: .92rem; line-height: 1.5; }
+#instant .src { display: block; margin-top: 8px; font-size: .78rem; color: var(--teal-dim); }
+#results { margin-top: 22px; }
+.result {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 12px; padding: 15px 18px; margin-bottom: 12px;
+  animation: rise .3s ease both;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.result a.title { color: var(--teal); font-size: 1.05rem; font-weight: 600; text-decoration: none; line-height: 1.35; }
+.result a.title:hover { text-decoration: underline; }
+.result .url { display: block; color: var(--teal-dim); font-size: .8rem; margin: 3px 0 6px; word-break: break-all; }
+.result .desc { color: var(--text-dim); font-size: .92rem; line-height: 1.5; }
+#credits { margin: 26px 0 10px; color: var(--text-dim); font-size: .82rem; line-height: 1.6; text-align: center; }
+#credits a, #page-footer a { color: var(--teal-dim); }
+#credits a:hover, #page-footer a:hover { color: var(--teal); }
+#page-footer {
+  width: 100%; max-width: 720px; padding: 18px; margin-top: 30px;
+  border-top: 1px solid var(--card-border); color: var(--text-dim);
+  font-size: .8rem; line-height: 1.6; text-align: center;
+}
+#page-footer p + p { margin-top: 6px; }
+[dir="rtl"] #instant { border-left: 1px solid var(--card-border); border-right: 3px solid var(--teal); }
+@media (max-width: 480px) {
+  #brand h1 { font-size: 1.6rem; }
+  #q { font-size: 1rem; padding: 12px 16px; }
+}
