@@ -9,6 +9,17 @@
   var metaLink = document.getElementById("meta-link");
   var META_URL = "https://searx.be/search?q=";
 
+  // Public SearXNG metasearch nodes (open source, volunteer-run).
+  // They aggregate Google, Bing and other engines. First one that answers wins.
+  var SEARX_NODES = [
+    "https://search.rhscz.eu",
+    "https://searx.be",
+    "https://search.inetol.net",
+    "https://priv.au",
+    "https://paulgo.io",
+    "https://baresearch.org"
+  ];
+
   function isArabic(s) { return /[؀-ۿ]/.test(s); }
   function setStatus(html) {
     if (!html) { statusEl.hidden = true; statusEl.innerHTML = ""; return; }
@@ -17,7 +28,6 @@
   function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
-  function stripTags(s) { return String(s).replace(/<[^>]*>/g, ""); }
   function hostOf(u) { try { return new URL(u).hostname; } catch (e) { return u; } }
   function withTimeout(promise, ms) {
     return Promise.race([promise, new Promise(function (_, rej) { setTimeout(function () { rej(new Error("timeout")); }, ms); })]);
@@ -28,9 +38,6 @@
       "<span class=\"url\">" + esc(hostOf(it.url)) + "</span>" +
       (it.desc ? "<p class=\"desc\">" + esc(it.desc) + "</p>" : "") +
       "</article>";
-  }
-  function section(title, html) {
-    return "<h3 class=\"sec-title\">" + esc(title) + "</h3>" + html;
   }
 
   function wikiLang(q) { return isArabic(q) ? "ar.wikipedia.org" : "en.wikipedia.org"; }
@@ -53,45 +60,35 @@
           instantEl.hidden = false;
           if (isArabic(q)) instantEl.setAttribute("dir", "rtl");
         });
-    }).catch(function () { /* optional */ });
+    }).catch(function () { /* instant answer is optional */ });
   }
 
-  function wikiResults(q) {
-    var wiki = wikiLang(q);
-    var api = "https://" + wiki + "/w/api.php?action=query&list=search&srlimit=10&format=json&origin=*&srsearch=" + encodeURIComponent(q);
-    return withTimeout(fetch(api).then(function (r) { return r.json(); }), 8000).then(function (d) {
-      var hits = (d && d.query && d.query.search) || [];
-      return hits.map(function (h) {
-        return {
-          url: "https://" + wiki + "/wiki/" + encodeURIComponent(h.title.replace(/ /g, "_")),
-          title: h.title,
-          desc: stripTags(h.snippet || "")
-        };
+  function searxQuery(node, q) {
+    return withTimeout(
+      fetch(node + "/search?q=" + encodeURIComponent(q) + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }),
+      9000
+    ).then(function (d) {
+      var items = ((d && d.results) || []).slice(0, 20).map(function (it) {
+        var engines = (it.engines || []).join(", ");
+        return { url: it.url, title: it.title, desc: it.content || "", engines: engines };
       });
+      if (!items.length) throw new Error("empty");
+      return { node: hostOf(node), items: items };
     });
   }
 
-  function marginaliaResults(q) {
+  function marginaliaQuery(q) {
     return withTimeout(
       fetch("https://api.marginalia.nu/public/search/" + encodeURIComponent(q) + "?count=15")
         .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }),
       9000
     ).then(function (d) {
-      return ((d && d.results) || []).map(function (it) {
-        return { url: it.url, title: it.title, desc: it.description || "" };
+      var items = ((d && d.results) || []).map(function (it) {
+        return { url: it.url, title: it.title, desc: it.description || "", engines: "marginalia" };
       });
-    });
-  }
-
-  function searxResults(q) {
-    return withTimeout(
-      fetch("https://search.rhscz.eu/search?q=" + encodeURIComponent(q) + "&format=json", { headers: { "Accept": "application/json" } })
-        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }),
-      9000
-    ).then(function (d) {
-      return ((d && d.results) || []).slice(0, 15).map(function (it) {
-        return { url: it.url, title: it.title, desc: it.content || "" };
-      });
+      if (!items.length) throw new Error("empty");
+      return { node: "api.marginalia.nu", items: items };
     });
   }
 
@@ -104,42 +101,26 @@
 
     renderInstant(q);
 
-    var webDone = false, wikiDone = false, webItems = [];
-    function maybeFinishStatus() {
-      if (!wikiDone || !webDone) return;
-      if (!resultsEl.innerHTML) {
-        setStatus("Nothing came back for \u201C" + esc(q) + "\u201D. Try different words, or <a style=\"color:var(--teal)\" href=\"" + metaLink.href + "\" rel=\"noopener\">widen this search with SearXNG metasearch</a>.");
-      } else {
-        setStatus("");
-        if (!webItems.length) {
-          setStatus("<span style=\"font-size:.85rem\">Web index is busy right now; showing knowledge results. <a style=\"color:var(--teal)\" href=\"" + metaLink.href + "\" rel=\"noopener\">Widen with SearXNG metasearch</a></span>");
-        }
+    var races = SEARX_NODES.map(function (n) { return searxQuery(n, q); });
+    races.push(marginaliaQuery(q));
+
+    Promise.any(races).then(function (win) {
+      var html = "";
+      win.items.forEach(function (it, i) { html += card(it, i); });
+      var label = isArabic(q)
+        ? "نتائج الويب (جوجل وبينج وغيرها عبر ميتا-بحث SearXNG)"
+        : "Web results (Google, Bing and more via SearXNG metasearch)";
+      if (win.node === "api.marginalia.nu") {
+        label = isArabic(q) ? "نتائج الويب (فهرس Marginalia المستقل)" : "Web results (Marginalia independent index)";
       }
+      resultsEl.innerHTML = "<h3 class=\"sec-title\">" + esc(label) + "</h3>" + html;
+      resultsEl.hidden = false;
+      setStatus("");
       creditsEl.hidden = false;
-    }
-
-    wikiResults(q).then(function (items) {
-      wikiDone = true;
-      if (items.length) {
-        var html = "";
-        items.forEach(function (it, i) { html += card(it, i); });
-        resultsEl.innerHTML += section(isArabic(q) ? "نتائج المعرفة (ويكيبيديا)" : "Knowledge results (Wikipedia)", html);
-        resultsEl.hidden = false;
-      }
-      maybeFinishStatus();
-    }).catch(function () { wikiDone = true; maybeFinishStatus(); });
-
-    // Web index: first source that answers wins
-    Promise.any([marginaliaResults(q), searxResults(q)]).then(function (items) {
-      webDone = true; webItems = items || [];
-      if (webItems.length) {
-        var html = "";
-        webItems.forEach(function (it, i) { html += card(it, i); });
-        resultsEl.innerHTML += section(isArabic(q) ? "نتائج الويب" : "Web results", html);
-        resultsEl.hidden = false;
-      }
-      maybeFinishStatus();
-    }).catch(function () { webDone = true; maybeFinishStatus(); });
+    }).catch(function () {
+      setStatus("The metasearch nodes are busy right now. <a style=\"color:var(--teal)\" href=\"" + metaLink.href + "\" rel=\"noopener\">Open this search directly in SearXNG metasearch</a> (Google, Bing and more).");
+      creditsEl.hidden = false;
+    });
   }
 
   function run(q) {
