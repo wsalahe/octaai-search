@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OctaAi Search</title>
 <meta name="description" content="OctaAi Search: a private, open-source search front end. No ads, no trackers, no cookies, no logs.">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.marginalia.nu https://search.rhscz.eu https://en.wikipedia.org https://ar.wikipedia.org; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.marginalia.nu https://search.rhscz.eu https://searx.be https://search.inetol.net https://priv.au https://paulgo.io https://baresearch.org https://en.wikipedia.org https://ar.wikipedia.org; img-src 'self' data: https://github.com; style-src 'self'; script-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#07100f">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="https://github.com/user-attachments/assets/1413b9fb-73d0-43f7-9caf-6877a4ba9bf7">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main id="app">
   <header id="brand">
-    <img src="icon.svg" alt="OctaAi logo" id="logo">
+    <img src="https://github.com/user-attachments/assets/1413b9fb-73d0-43f7-9caf-6877a4ba9bf7" alt="OctaAi logo" id="logo">
     <h1>OctaAi <span>Search</span></h1>
     <p class="tagline">Private search. No ads, no trackers, no cookies, no logs.</p>
   </header>
@@ -28,13 +28,13 @@
   <section id="instant" hidden></section>
   <section id="results" hidden></section>
   <footer id="credits" hidden>
-    <p>Web results from <a href="https://marginalia-search.com/" rel="noopener">Marginalia Search</a> (independent open-source index, results <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener">CC-BY-NC-SA 4.0</a>) or <a href="https://searx.space/" rel="noopener">SearXNG</a> metasearch nodes. Knowledge results and instant answers from Wikipedia.
+    <p>Web results come from volunteer-run <a href="https://searx.space/" rel="noopener">SearXNG</a> metasearch nodes (aggregating Google, Bing and more) or the independent <a href="https://marginalia-search.com/" rel="noopener">Marginalia Search</a> index (results <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener">CC-BY-NC-SA 4.0</a>). Instant answers from Wikipedia.
       Not enough? <a id="meta-link" href="#" rel="noopener">Widen this search with SearXNG metasearch</a>.</p>
   </footer>
 </main>
 <footer id="page-footer">
-  <p><strong>Privacy, honestly:</strong> this page stores nothing and talks only to the search APIs needed to answer you. Your query is sent over HTTPS to the Marginalia Search API (and Wikipedia for instant answers); like any search backend, they can see the queries they answer. We never see, log, or sell them.</p>
-  <p><a href="https://github.com/wsalahe/octaai-search">Open source (MIT)</a> · Part of the <a href="https://github.com/wsalahe/OctaAi">OctaAi browser</a> project</p>
+  <p><strong>Privacy, honestly:</strong> this page stores nothing and talks only to the search APIs needed to answer you. Your query is sent over HTTPS to a volunteer-run SearXNG metasearch node (and Wikipedia for instant answers); like any search backend, that node can see the queries it answers. We never see, log, or sell them. We never see, log, or sell them.</p>
+  <p><a href="https://github.com/wsalahe/octaai-search">Open source (MIT)</a> · Part of the <a href="https://github.com/wsalahe/OctaAi">OctaAi browser</a> project · <a href="https://github.com/user-attachments/assets/3a99a6f5-5a42-422f-9fe2-73c008904ae1" rel="noopener">Watch the intro video</a></p>
 </footer>
 <script src="app.js"></script>
 </body>
